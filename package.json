@@ -32,6 +32,14 @@
     "cw",
     "template"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mkurak/cw.helper.package.generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mkurak/cw.helper.package.generator/issues"
+  },
+  "homepage": "https://github.com/mkurak/cw.helper.package.generator",
   "author": "Mert Kurak",
   "license": "MIT",
   "devDependencies": {

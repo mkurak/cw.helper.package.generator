@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2025-09-20
+### Fixed
+- Added repository metadata so npm provenance verification succeeds during the publish workflow.
+
 ## [1.0.2] - 2025-09-20
 ### Changed
 - Hazırlık sürecini takip etmek için patch release akışını release script'i üzerinden denedik; sürümleme adımları artık belgelenmiş durumda.
