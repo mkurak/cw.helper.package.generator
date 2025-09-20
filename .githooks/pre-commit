@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+run_step() {
+    local description="$1"
+    shift
+    printf '
+[cw-package-generator] %s...
+' "$description"
+    if ! "$@"; then
+        printf '
+[cw-package-generator] ERROR: %s failed (command: %s)
+' "$description" "$*" >&2
+        exit 1
+    fi
+}
+
+run_step "Formatting staged files" npm run format
+
+git add --all
+
+run_step "Running lint checks" npm run lint
+run_step "Running coverage gate (>= thresholds)" npm run test:coverage
+
+printf '
+[cw-package-generator] Pre-commit checks passed.
+'
+exit 0
