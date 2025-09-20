@@ -43,6 +43,9 @@ else
 fi
 
 printf '\n[{{packageSlug}}] Tagged commit %s with %s (version %s -> %s).\n' "$(git rev-parse --short HEAD)" "$tag" "$previous_version" "$current_version"
-printf '[{{packageSlug}}] Remember to push with: git push --follow-tags\n'
+
+if ! git push --follow-tags >/dev/null 2>&1; then
+    printf '[{{packageSlug}}] Warning: automatic git push --follow-tags failed.\n' >&2
+fi
 
 exit 0
