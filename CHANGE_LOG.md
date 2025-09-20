@@ -1,5 +1,12 @@
 # Changelog
 
+# Changelog
+
+## [2.0.1] - 2025-09-20
+### Fixed
+- Post-commit hook now pushes version tags (`git push --follow-tags`) automatically after
+  bump commits on the default branch, falling back to a warning if the push fails.
+
 ## [2.0.0] - 2025-09-20
 ### Removed
 - Dropped the `sync` command; the CLI now focuses solely on first-time scaffolding.
