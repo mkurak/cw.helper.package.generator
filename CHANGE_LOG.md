@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.0] - 2025-09-20
+## [1.4.0] - 2025-09-20
 ### Added
 - CLI bayrakları (`--deps`, `--dev-deps`, `--post-command`, `--clear-post-commands`, `--git-release`, `--no-git-release`, `--git-release-type`) ile JSON düzenlemeye gerek kalmadan anlık yapılandırma yapılabiliyor.
 - `applyConfigOverrides` yardımcı fonksiyonu programatik kullanımlar için dışa açıldı.
