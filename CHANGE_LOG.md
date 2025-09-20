@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2025-09-20
+### Changed
+- Hazırlık sürecini takip etmek için patch release akışını release script'i üzerinden denedik; sürümleme adımları artık belgelenmiş durumda.
+
 ## [1.0.1] - 2025-09-20
 ### Fixed
 - Clarified the release flow and revalidated CLI version reporting to keep metadata in sync after the 1.0.0 cut.
