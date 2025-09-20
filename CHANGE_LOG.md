@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.4.2] - 2025-09-20
+## [1.4.7] - 2025-09-20
 ### Fixed
 - Escaped the publish workflow template so `NODE_AUTH_TOKEN` keeps the full
   `${{ secrets.NPM_TOKEN }}` expression instead of collapsing to `$` in
