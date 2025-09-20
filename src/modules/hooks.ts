@@ -13,16 +13,32 @@ export const hooksModule: TemplateModule = {
             prepare: 'npm run build && npm run hooks:install'
         });
 
-        const setupPath = path.join(ctx.targetDir, 'scripts', 'setup-hooks.cjs');
+        const scriptsDir = path.join(ctx.targetDir, 'scripts');
+        const setupPath = path.join(scriptsDir, 'setup-hooks.cjs');
         await ctx.copyTemplate('hooks', 'scripts/setup-hooks.cjs.hbs', 'scripts/setup-hooks.cjs', {
             packageSlug: ctx.variables.packageSlug
         });
         await fs.chmod(setupPath, 0o755);
+
+        await ctx.copyTemplate(
+            'hooks',
+            'scripts/validate-package-metadata.cjs.hbs',
+            'scripts/validate-package-metadata.cjs',
+            {
+                packageSlug: ctx.variables.packageSlug
+            }
+        );
 
         const hookPath = path.join(ctx.targetDir, '.githooks', 'pre-commit');
         await ctx.copyTemplate('hooks', '.githooks/pre-commit.hbs', '.githooks/pre-commit', {
             packageSlug: ctx.variables.packageSlug
         });
         await fs.chmod(hookPath, 0o755);
+
+        const postCommitPath = path.join(ctx.targetDir, '.githooks', 'post-commit');
+        await ctx.copyTemplate('hooks', '.githooks/post-commit.hbs', '.githooks/post-commit', {
+            packageSlug: ctx.variables.packageSlug
+        });
+        await fs.chmod(postCommitPath, 0o755);
     }
 };

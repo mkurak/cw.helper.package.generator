@@ -32,6 +32,14 @@ function applyBasePackageJson(ctx: ProjectContext): void {
         },
         files: ['dist', 'README.md', 'LICENSE'],
         sideEffects: false,
+        repository: {
+            type: 'git',
+            url: ''
+        },
+        bugs: {
+            url: ''
+        },
+        homepage: '',
         engines: {
             node: '>=18'
         }

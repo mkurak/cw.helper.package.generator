@@ -1,10 +1,16 @@
 # Changelog
 
+## [1.5.0] - 2025-09-20
+### Added
+- Git hooks now validate `repository`, `bugs`, and `homepage` metadata and auto-tag commits on `main`/`master` when `package.json` version changes.
+- Generated packages include `scripts/validate-package-metadata.cjs` for metadata checks outside the hook pipeline.
+
+### Changed
+- Base module seeds `repository`, `bugs`, and `homepage` entries with empty placeholders, forcing projects to provide real URLs before commits succeed.
+
 ## [1.4.7] - 2025-09-20
 ### Fixed
-- Escaped the publish workflow template so `NODE_AUTH_TOKEN` keeps the full
-  `${{ secrets.NPM_TOKEN }}` expression instead of collapsing to `$` in
-  generated packages.
+- Escaped the publish workflow template so `NODE_AUTH_TOKEN` keeps the full `${{ secrets.NPM_TOKEN }}` expression instead of collapsing to `$` in generated packages.
 
 ## [1.4.1] - 2025-09-20
 ### Fixed

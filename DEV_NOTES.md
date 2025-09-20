@@ -31,7 +31,9 @@
 
 ## Module Details
 - `base` (`src/modules/base.ts`) injects TypeScript/Jest/ESLint/Prettier scripts, exports map, and copies core boilerplate (README, DEV_NOTES, CHANGE_LOG, tsconfig pair, sample src/tests, license, ignores).
-- `hooks` sets up `.githooks/pre-commit` plus `scripts/setup-hooks.cjs`; chmod is applied to keep scripts executable.
+- `hooks` sets up `.githooks/pre-commit`/`.githooks/post-commit` plus `scripts/setup-hooks.cjs`; chmod is applied to keep scripts executable.
+- Pre-commit runs format → metadata validation (`scripts/validate-package-metadata.cjs`) → lint → coverage. Missing repository/bugs/homepage URLs abort the commit.
+- Post-commit auto-tags the commit when `package.json` introduces a version bump on `master`/`main`, hinting the user to push with `--follow-tags`.
 - `release` installs release/smoke scripts, registers `npm run release` & `npm run prepublishOnly`, and drops `.github/workflows/publish.yml`.
 - Module order inside `modules` array (`base`, `release`, `hooks`) controls default prompt ordering.
 
