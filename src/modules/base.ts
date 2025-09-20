@@ -47,6 +47,7 @@ function applyBasePackageJson(ctx: ProjectContext): void {
         eslint: '^9.35.0',
         'eslint-config-prettier': '^10.1.8',
         'eslint-plugin-prettier': '^5.5.4',
+        'typescript-eslint': '^8.44.0',
         jest: '^30.1.3',
         prettier: '^3.6.2',
         'ts-jest': '^29.4.3',

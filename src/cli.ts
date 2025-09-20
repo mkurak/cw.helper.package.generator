@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import fs from 'fs-extra';
@@ -9,6 +10,9 @@ import type { TemplateModule } from './types.js';
 
 const program = new Command();
 const defaultModules = ['base', 'hooks', 'release'];
+
+const packageJsonPath = fileURLToPath(new URL('../package.json', import.meta.url));
+const { version: packageVersion } = fs.readJsonSync(packageJsonPath) as { version?: string };
 
 function resolveModuleIds(ids: string[]): TemplateModule[] {
     const resolved: TemplateModule[] = [];
@@ -33,7 +37,7 @@ async function ensureTargetDir(dir: string, force: boolean): Promise<void> {
 program
     .name('cw-package-gen')
     .description('Scaffold and synchronize cw helper packages')
-    .version('0.1.0');
+    .version(packageVersion ?? '0.0.0');
 
 program
     .command('init')
