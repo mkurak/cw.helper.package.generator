@@ -15,6 +15,11 @@ if ! git diff-tree -r --name-only --no-commit-id HEAD^ HEAD | grep -q '^package.
     exit 0
 fi
 
+commit_message=$(git log -1 --pretty=%s)
+if [[ "$commit_message" =~ ^chore:\ release\ v ]]; then
+    exit 0
+fi
+
 current_version=$(node -p "(() => { try { return require('./package.json').version || ''; } catch { return ''; } })()")
 if [[ -z "$current_version" ]]; then
     exit 0
