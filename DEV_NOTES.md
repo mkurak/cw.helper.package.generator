@@ -39,6 +39,7 @@
 - Handlebars templates can access `{{packageSlug}}` for slugified names and `{{date}}` for current ISO date.
 - When adding placeholders update `ProjectContext.variables` and provide sensible fallbacks to avoid breaking sync.
 - Non-template files (no `.hbs`) are copied exactly—useful for static config like `eslint.config.mjs`.
+- Escape literal moustaches with {{"{{"}} / {{"}}"}} when GitHub Actions syntax must be emitted verbatim (e.g. `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}`).
 
 ## Tooling & Scripts
 - Builds target Node.js 18+, pure ESM output. `tsconfig.build.json` emits declarations and `.js` files into `dist/`.
