@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2025-09-20
+### Fixed
+- Varsayılan `tsconfig.json` dosyasında `rootDir` kaldırıldı; test dosyaları artık derleme kapsamına dahil olurken hata üretmiyor.
+
 ## [1.4.0] - 2025-09-20
 ### Added
 - CLI bayrakları (`--deps`, `--dev-deps`, `--post-command`, `--clear-post-commands`, `--git-release`, `--no-git-release`, `--git-release-type`) ile JSON düzenlemeye gerek kalmadan anlık yapılandırma yapılabiliyor.
