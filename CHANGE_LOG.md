@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2025-09-20
+### Fixed
+- Clarified the release flow and revalidated CLI version reporting to keep metadata in sync after the 1.0.0 cut.
+
 ## [1.0.0] - 2025-09-20
 ### Added
 - Comprehensive README and developer notes covering CLI usage, modules, and maintenance.
