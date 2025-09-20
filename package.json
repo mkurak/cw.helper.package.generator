@@ -1,6 +1,6 @@
 {
   "name": "cw.helper.package.generator",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -24,7 +24,7 @@
     "hooks:install": "node scripts/setup-hooks.cjs",
     "release": "node scripts/release.mjs"
   },
-  "description": "CLI to scaffold and synchronize cw helper packages.",
+  "description": "CLI to scaffold cw helper packages.",
   "keywords": [
     "scaffold",
     "cli",

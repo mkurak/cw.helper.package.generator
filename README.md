@@ -1,6 +1,6 @@
 # cw.helper.package.generator
 
-`cw-package-gen` CLI’si, cw ekosistemindeki TypeScript paketlerini tek komutla standart hale getirmek için geliştirildi. Şablon bazlı dosyalar, Jest/ESLint/Prettier ayarları, git hook’ları ve release otomasyonu aynı anda kuruluyor; ilerleyen zamanda şablonları güncellediğimizde `sync` komutuyla tüm paketleri tekrar hizalayabiliyoruz.
+`cw-package-gen` CLI’si, cw ekosistemindeki TypeScript paketlerini tek komutla standart hale getirmek için geliştirildi. Şablon bazlı dosyalar, Jest/ESLint/Prettier ayarları, git hook’ları ve release otomasyonu aynı anda kuruluyor.
 
 ## İçindekiler
 - [Kurulum](#kurulum)
@@ -44,15 +44,6 @@ Yeni bir paket oluşturur.
 | `--yes` | Soruları atla | `false` |
 | `--force` | Dizin dolu olsa bile devam et | `false` |
 
-### `sync`
-Mevcut bir pakete şablon güncellemelerini uygular.
-
-```bash
-cw-package-gen sync --modules base,release
-```
-
-`init` ile aynı bayrakları destekler (sadece `--force` yok). Konfigürasyon + CLI override kombinasyonu ile yalnızca o koşum için davranışı değiştirebilirsin.
-
 ## Yapılandırma Dosyası
 CLI, çalıştırıldığında aşağıdaki sırayla konfig arar:
 1. `--config <path>` verilmişse o dosya,
@@ -81,7 +72,7 @@ Dahili JSON örneği:
   }
 }
 ```
-- `modules`: Çalıştırılacak modül kimlikleri.
+- `modules`: Çalıştırılacak modül kimlikleri (yalnızca ilk kurulum sırasında kullanılır).
 - `postInstall.dependencies` / `devDependencies`: Eklenmesi istenen paket adları; `npm view` ile son sürüm alınır ve `^` ön ekiyle `package.json`’a yazılır.
 - `postInstall.run`: Şablonlar işlendi ve `package.json` kaydedildikten sonra koşacak komut listesi.
 - `git.initialRelease`: Repo temiz ve remote bağlıysa `npm run release -- <type>` çağırarak ilk sürümü çıkartır.

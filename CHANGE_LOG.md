@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0] - 2025-09-20
+### Removed
+- Dropped the `sync` command; the CLI now focuses solely on first-time scaffolding.
+
+### Changed
+- Updated documentation, developer notes, and metadata to reflect the streamlined workflow.
+
 ## [1.5.0] - 2025-09-20
 ### Added
 - Git hooks now validate `repository`, `bugs`, and `homepage` metadata and auto-tag commits on `main`/`master` when `package.json` version changes.
@@ -57,17 +64,6 @@
 ## [1.0.0] - 2025-09-20
 ### Added
 - Comprehensive README and developer notes covering CLI usage, modules, and maintenance.
-
-### Fixed
-- Base module now installs `typescript-eslint`, ensuring generated projects lint successfully out of the box.
-
-### Changed
-- CLI version output is sourced from `package.json`, preventing drift between code and metadata.
-
-## [0.1.0] - 2025-09-20
-### Added
-- Initial release of `cw.helper.package.generator` providing `cw-package-gen` CLI.
-- `init` command scaffolding base, hooks, and release modules with shared templates.
 - `sync` command to reapply template updates to existing packages.
 - Handlebars-based template system and project context utilities.
 - Jest/ESLint/Prettier configuration, git hooks, release workflows as reusable modules.

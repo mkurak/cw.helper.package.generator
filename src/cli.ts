@@ -93,7 +93,7 @@ function buildOverrides(options: Record<string, unknown>): ConfigOverrides {
 
 program
     .name('cw-package-gen')
-    .description('Scaffold and synchronize cw helper packages')
+    .description('Scaffold cw helper packages')
     .version(packageVersion ?? '0.0.0');
 
 program
@@ -185,88 +185,6 @@ program
         console.log(
             `\nCreated package at ${targetDir}. Run \`cd ${path.relative(process.cwd(), targetDir)}\` and install dependencies.`
         );
-    });
-
-program
-    .command('sync')
-    .description('Synchronize an existing package with cw templates')
-    .option('-t, --target <dir>', 'target directory (default: current directory)')
-    .option('-m, --modules <modules>', 'comma separated module list (default: from config)')
-    .option('-y, --yes', 'accept defaults without prompting')
-    .option('--config <file>', 'path to generator config JSON')
-    .option('--deps <deps>', 'comma separated dependencies to add (overrides config)')
-    .option('--dev-deps <deps>', 'comma separated dev dependencies to add (overrides config)')
-    .option(
-        '--post-command <command>',
-        'post-install command executed after synchronization (repeatable)',
-        collectRunCommands,
-        []
-    )
-    .option('--clear-post-commands', 'skip post-install commands')
-    .option('--git-release', 'enable git automation (overrides config)')
-    .option('--no-git-release', 'disable git automation')
-    .option('--git-release-type <type>', 'release type for git automation (default from config)')
-    .action(async (options) => {
-        const targetDir = path.resolve(options.target ?? '.');
-        const pkgPath = path.join(targetDir, 'package.json');
-        if (!fs.existsSync(pkgPath)) {
-            throw new Error(`No package.json found at ${pkgPath}`);
-        }
-
-        const loadedConfig = await loadGeneratorConfig({
-            configPath: options.config,
-            searchDir: targetDir
-        });
-        const overrides = buildOverrides(options);
-        applyConfigOverrides(loadedConfig.config, overrides);
-
-        const moduleDefaults = loadedConfig.config.modules.length
-            ? loadedConfig.config.modules
-            : defaultModules;
-
-        const moduleIds = options.modules
-            ? String(options.modules)
-                  .split(',')
-                  .map((id: string) => id.trim())
-                  .filter(Boolean)
-            : moduleDefaults.slice();
-
-        let selectedIds = moduleIds;
-        if (!options.yes && !options.modules) {
-            const answers = await inquirer.prompt([
-                {
-                    type: 'checkbox',
-                    name: 'modules',
-                    message: 'Select modules to synchronize:',
-                    choices: modules.map((mod) => ({
-                        name: `${mod.id} – ${mod.description}`,
-                        value: mod.id
-                    })),
-                    default: moduleDefaults
-                }
-            ]);
-            selectedIds = answers.modules.length > 0 ? answers.modules : moduleDefaults;
-        }
-
-        const selectedModules = resolveModuleIds(selectedIds);
-        const existing = await fs.readJson(pkgPath);
-        const context = new ProjectContext({
-            targetDir,
-            packageName: existing.name ?? path.basename(targetDir),
-            description: existing.description ?? '',
-            isInit: false
-        });
-
-        for (const mod of selectedModules) {
-            await mod.apply(context);
-        }
-
-        await applyPostInstallConfig(context, loadedConfig.config);
-        await context.save();
-        await ensureConfigFile(targetDir, loadedConfig);
-        await runPostInstallCommands(loadedConfig.config.postInstall.run, targetDir);
-        await runGitAutomation(targetDir, loadedConfig.config);
-        console.log(`\nSynchronized ${targetDir}. Review changes before committing.`);
     });
 
 program.parseAsync(process.argv);

@@ -3,13 +3,13 @@
 > Quick refresher for future sessions when conversation history is missing.
 
 ## Overview
-- Package delivers the `cw-package-gen` CLI that scaffolds and syncs helper packages using shared templates.
+- Package delivers the `cw-package-gen` CLI that scaffolds helper packages using shared templates.
 - Templates live under `templates/modules/*`; each module exports an `apply` method that mutates `ProjectContext`.
 - `ProjectContext` owns template variables, package.json merging, and file writes; run `context.save()` once modules finish.
 
 ## CLI & Flow
 - Entry point: `src/cli.ts` (compiled to `dist/cli.js` with shebang) using `commander` for command/option parsing.
-- Two commands: `init` (creates new package) and `sync` (updates existing). Both resolve module IDs → `TemplateModule` instances via `getModule`.
+- Single command: `init`. Module IDs resolve to `TemplateModule` instances via `getModule`.
 - Interactive module selection uses `inquirer` unless `--yes` or explicit `--modules` is provided.
 - `ensureTargetDir` prevents scaffolding into non-empty directories unless `--force` is passed.
 
@@ -39,7 +39,7 @@
 
 ## Templates
 - Handlebars templates can access `{{packageSlug}}` for slugified names and `{{date}}` for current ISO date.
-- When adding placeholders update `ProjectContext.variables` and provide sensible fallbacks to avoid breaking sync.
+- When adding placeholders update `ProjectContext.variables` and provide sensible fallbacks so regenerated files remain consistent.
 - Non-template files (no `.hbs`) are copied exactly—useful for static config like `eslint.config.mjs`.
 - Escape literal moustaches with {{"{{"}} / {{"}}"}} when GitHub Actions syntax must be emitted verbatim (e.g. `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}`).
 
@@ -51,7 +51,7 @@
 
 ## Testing
 - Current Jest coverage: `tests/base.test.ts` validates base module scaffolding end-to-end in a temp directory.
-- Add more module-level tests when behaviour grows (e.g. release workflow sync smoke test, hooks permissions).
+- Add more module-level tests when behaviour grows (e.g. release workflow smoke test, hooks permissions).
 - Prefer using `fs-extra` helpers with tmp dirs to keep tests isolated and avoid polluting repo.
 
 ## Release & Publishing
@@ -60,11 +60,10 @@
 - `publishConfig.provenance: true`; set `NPM_CONFIG_PROVENANCE=false` when doing manual local publishes without provenance support.
 
 ## Maintenance Tips
-- Keep dependency ranges aligned with downstream templates to avoid mismatched tooling versions after `sync`.
-- Whenever templates change, run `cw-package-gen sync` against active helper packages to propagate updates.
+- Keep dependency ranges aligned with downstream templates to avoid mismatched tooling versions.
 - Document any non-obvious behaviour in this file so future chats can pick up quickly.
 
 ## Future Ideas
 - Add a `docs` module that drops default README/Dev Notes variants for docs-heavy packages.
 - Offer a dry-run flag to print planned changes without touching disk (useful for audits).
-- Expand test suite to cover `sync` behaviour and template conflict resolution.
+- Explore optional update tooling once güvenilir bir diff/merge stratejisi belirlendi.
