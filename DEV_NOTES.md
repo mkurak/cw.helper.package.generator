@@ -16,9 +16,10 @@
 ## Generator Config
 - Config loader lives in `src/generatorConfig.ts`; exported helpers handle locating, normalising, and persisting `cw-package-gen.config.json`.
 - Search order: CLI `--config <path>` → target dir (`DEFAULT_CONFIG_FILENAME`) → builtin defaults. When builtin kullanılırsa `ensureConfigFile` hedefe varsayılan dosyayı yazar.
-- Defaults include applying `base/hooks/release`, ek `cw.helper.colored.console` dependencies ve `cw.helper.dev.runner` dev dependencies.
+- Defaults include applying `base/hooks/release`, ek `cw.helper.colored.console` dependencies, `cw.helper.dev.runner` dev dependencies, ve post komutları (`npm install`, `npm run format`, `npm run lint -- --fix`, `npm run prepare`).
 - `applyPostInstallConfig` sorgulanan paketler için `npm view <pkg> version --json` çağırarak son sürümü bulur, `^` prefiksiyle `ProjectContext` içine ekler (varsa olduğu gibi bırakır). Testler mock resolver ile çalışır.
-- `runPostInstallCommands` `postInstall.run` listesini shell üzerinden sırasıyla çalıştırır.
+- `runPostInstallCommands` `postInstall.run` listesini shell üzerinden sırasıyla çalıştırır (komut fail ederse süreç durur).
+- `runGitAutomation` git repo + remote varsa ve temizse `npm run release -- <type>` tetikler; config dosyası dışındaki uncommitted değişiklikler bulunursa kullanıcıyı uyarıp adımı atlar.
 
 ## ProjectContext
 - Constructed with `{ targetDir, packageName, description, isInit }`. It loads or bootstraps `package.json`.

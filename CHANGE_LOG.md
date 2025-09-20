@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0] - 2025-09-20
+### Added
+- Default post-install command chain (install → format → lint -- --fix → prepare) runs automatically after scaffolding.
+- Optional git automation triggers `npm run release` when the repository is clean and remotes exist.
+
+### Changed
+- README/DEV_NOTES updated with automation details and configuration guidance.
+
 ## [1.1.0] - 2025-09-20
 ### Added
 - Config-driven workflow via `cw-package-gen.config.json`, allowing module selection, dependency injection, and post-run commands.

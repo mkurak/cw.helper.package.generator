@@ -7,7 +7,10 @@ import type {
     LoadedGeneratorConfig,
     ResolvedGeneratorConfig,
     ResolvedPostInstallConfig,
-    PostInstallConfig
+    PostInstallConfig,
+    GitConfig,
+    ResolvedGitConfig,
+    ReleaseType
 } from './types.js';
 import type { ProjectContext } from './context.js';
 
@@ -16,12 +19,25 @@ const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 export const DEFAULT_CONFIG_FILENAME = 'cw-package-gen.config.json';
 
+const builtinRunCommands = [
+    'npm install',
+    'npm run format',
+    'npm run lint -- --fix',
+    'npm run prepare'
+];
+
 const builtinConfig: ResolvedGeneratorConfig = {
     modules: ['base', 'hooks', 'release'],
     postInstall: {
         dependencies: ['cw.helper.colored.console'],
         devDependencies: ['cw.helper.dev.runner'],
-        run: []
+        run: builtinRunCommands
+    },
+    git: {
+        initialRelease: {
+            enabled: true,
+            type: 'patch'
+        }
     }
 };
 
@@ -32,6 +48,9 @@ function cloneResolvedConfig(config: ResolvedGeneratorConfig): ResolvedGenerator
             dependencies: config.postInstall.dependencies.slice(),
             devDependencies: config.postInstall.devDependencies.slice(),
             run: config.postInstall.run.slice()
+        },
+        git: {
+            initialRelease: { ...config.git.initialRelease }
         }
     };
 }
@@ -81,6 +100,10 @@ function normalizeConfig(custom?: GeneratorConfig): ResolvedGeneratorConfig {
         resolved.postInstall = mergePostInstall(resolved.postInstall, custom.postInstall);
     }
 
+    if (custom.git) {
+        resolved.git = mergeGitConfig(resolved.git, custom.git);
+    }
+
     return resolved;
 }
 
@@ -110,6 +133,53 @@ function mergePostInstall(
     }
 
     return merged;
+}
+
+const releaseTypes: ReleaseType[] = [
+    'major',
+    'minor',
+    'patch',
+    'premajor',
+    'preminor',
+    'prepatch',
+    'prerelease'
+];
+
+const releaseTypeSet = new Set(releaseTypes);
+
+function assertReleaseType(value: string | undefined): ReleaseType | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (!releaseTypeSet.has(value as ReleaseType)) {
+        throw new Error(
+            `Invalid release type: ${value}. Allowed values: ${releaseTypes.join(', ')}`
+        );
+    }
+    return value as ReleaseType;
+}
+
+function mergeGitConfig(base: ResolvedGitConfig, override: GitConfig): ResolvedGitConfig {
+    const result: ResolvedGitConfig = {
+        initialRelease: { ...base.initialRelease }
+    };
+
+    if (Object.prototype.hasOwnProperty.call(override, 'initialRelease')) {
+        const value = override.initialRelease;
+        if (typeof value === 'boolean') {
+            result.initialRelease.enabled = value;
+        } else if (value && typeof value === 'object') {
+            if (Object.prototype.hasOwnProperty.call(value, 'enabled')) {
+                result.initialRelease.enabled = Boolean(value.enabled);
+            }
+            const type = assertReleaseType(value.type);
+            if (type) {
+                result.initialRelease.type = type;
+            }
+        }
+    }
+
+    return result;
 }
 
 async function readConfigFile(filePath: string): Promise<GeneratorConfig> {
@@ -245,5 +315,130 @@ export async function runPostInstallCommands(commands: string[], cwd: string): P
                 }
             });
         });
+    }
+}
+
+async function execGit(args: string[], cwd: string): Promise<{ stdout: string }> {
+    const { stdout } = await execFileAsync('git', args, { cwd });
+    return { stdout };
+}
+
+async function isGitRepository(cwd: string): Promise<boolean> {
+    try {
+        await execGit(['rev-parse', '--is-inside-work-tree'], cwd);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+async function hasGitRemote(cwd: string): Promise<boolean> {
+    try {
+        const { stdout } = await execGit(['remote'], cwd);
+        const remotes = stdout
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean);
+        return remotes.length > 0;
+    } catch (error) {
+        return false;
+    }
+}
+
+interface GitStatusEntry {
+    code: string;
+    path: string;
+}
+
+async function getGitStatus(cwd: string): Promise<GitStatusEntry[]> {
+    const { stdout } = await execGit(['status', '--porcelain'], cwd);
+    return stdout
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => ({
+            code: line.slice(0, 2),
+            path: line.slice(3).trim()
+        }));
+}
+
+async function runInitialRelease(cwd: string, type: ReleaseType): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+        const child = spawn(npmCommand, ['run', 'release', '--', type], {
+            cwd,
+            shell: false,
+            stdio: 'inherit'
+        });
+        child.on('error', (error) => reject(error));
+        child.on('exit', (code) => {
+            if (code && code !== 0) {
+                reject(new Error(`npm run release exited with code ${code}`));
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+export async function runGitAutomation(
+    cwd: string,
+    config: ResolvedGeneratorConfig
+): Promise<void> {
+    const initial = config.git.initialRelease;
+    if (!initial.enabled) {
+        return;
+    }
+
+    if (!(await isGitRepository(cwd))) {
+        console.log('Skipping initial release: not a git repository.');
+        return;
+    }
+
+    if (!(await hasGitRemote(cwd))) {
+        console.log('Skipping initial release: no git remotes configured.');
+        return;
+    }
+
+    let statusEntries: GitStatusEntry[] = [];
+    try {
+        statusEntries = await getGitStatus(cwd);
+    } catch (error) {
+        console.warn(
+            'Skipping initial release: failed to read git status.',
+            (error as Error).message
+        );
+        return;
+    }
+
+    if (statusEntries.length > 0) {
+        const disallowed = statusEntries.filter(
+            (entry) => entry.path !== DEFAULT_CONFIG_FILENAME
+        );
+        if (disallowed.length > 0) {
+            console.warn(
+                'Skipping initial release: working tree has uncommitted changes (excluding config). Commit or stash them first.'
+            );
+            disallowed.slice(0, 5).forEach((entry) => console.warn(`  ${entry.code} ${entry.path}`));
+            if (disallowed.length > 5) {
+                console.warn(`  ... ${disallowed.length - 5} more entries`);
+            }
+            return;
+        }
+
+        const configEntry = statusEntries.find(
+            (entry) => entry.path === DEFAULT_CONFIG_FILENAME
+        );
+        if (configEntry) {
+            console.warn(
+                `Skipping initial release: config file (${DEFAULT_CONFIG_FILENAME}) has uncommitted changes. Commit it before releasing.`
+            );
+            return;
+        }
+    }
+
+    try {
+        await runInitialRelease(cwd, initial.type);
+    } catch (error) {
+        console.error('Initial release failed:', (error as Error).message);
     }
 }

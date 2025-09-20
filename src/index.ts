@@ -7,7 +7,12 @@ export type {
     PostInstallConfig,
     ResolvedGeneratorConfig,
     ResolvedPostInstallConfig,
-    LoadedGeneratorConfig
+    LoadedGeneratorConfig,
+    GitConfig,
+    ResolvedGitConfig,
+    ReleaseType,
+    InitialReleaseConfigInput,
+    InitialReleaseConfig
 } from './types.js';
 export { modules, getModule } from './modules/index.js';
 export {
@@ -15,5 +20,6 @@ export {
     ensureConfigFile,
     applyPostInstallConfig,
     runPostInstallCommands,
+    runGitAutomation,
     DEFAULT_CONFIG_FILENAME
 } from './generatorConfig.js';

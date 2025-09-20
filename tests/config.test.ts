@@ -17,6 +17,13 @@ describe('generator config loading', () => {
         expect(loaded.source).toBe('builtin');
         expect(loaded.config.modules).toEqual(['base', 'hooks', 'release']);
         expect(loaded.config.postInstall.dependencies).toContain('cw.helper.colored.console');
+        expect(loaded.config.postInstall.run).toEqual([
+            'npm install',
+            'npm run format',
+            'npm run lint -- --fix',
+            'npm run prepare'
+        ]);
+        expect(loaded.config.git.initialRelease).toEqual({ enabled: true, type: 'patch' });
         fs.removeSync(dir);
     });
 
@@ -29,6 +36,12 @@ describe('generator config loading', () => {
                 dependencies: ['lodash'],
                 devDependencies: [],
                 run: 'npm run lint'
+            },
+            git: {
+                initialRelease: {
+                    enabled: false,
+                    type: 'minor'
+                }
             }
         });
 
@@ -37,6 +50,7 @@ describe('generator config loading', () => {
         expect(loaded.config.modules).toEqual(['base']);
         expect(loaded.config.postInstall.dependencies).toEqual(['lodash']);
         expect(loaded.config.postInstall.run).toEqual(['npm run lint']);
+        expect(loaded.config.git.initialRelease).toEqual({ enabled: false, type: 'minor' });
         fs.removeSync(dir);
     });
 });

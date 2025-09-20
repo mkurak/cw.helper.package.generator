@@ -99,7 +99,18 @@ Generator davranışını `cw-package-gen.config.json` dosyasıyla özelleştire
   "postInstall": {
     "dependencies": ["cw.helper.colored.console"],
     "devDependencies": ["cw.helper.dev.runner"],
-    "run": ["npm install"]
+    "run": [
+      "npm install",
+      "npm run format",
+      "npm run lint -- --fix",
+      "npm run prepare"
+    ]
+  },
+  "git": {
+    "initialRelease": {
+      "enabled": true,
+      "type": "patch"
+    }
   }
 }
 ```
@@ -107,8 +118,9 @@ Generator davranışını `cw-package-gen.config.json` dosyasıyla özelleştire
 - `modules` – uygulanacak modül kimlikleri (CLI seçenekleriyle override edilebilir).
 - `postInstall.dependencies` / `devDependencies` – paket isim listeleri. Sürüm girmen gerekmez; generator en güncel sürümü sorgulayıp `^` prefiksiyle `package.json` içine ekler (mevcut satırlar korunur).
 - `postInstall.run` – modüller ve manifest kaydedildikten sonra sırayla çalıştırılacak komutlar. Boş veya belirtilmemişse adım atlanır.
+- `git.initialRelease` – git repo ve remote uygunsa `npm run release -- <type>` çağırarak otomatik sürüm çıkışı yapar. `enabled: false` ile devre dışı bırakabilir, `type` alanını release script’inin desteklediği seçeneklerden biriyle değiştirebilirsin.
 
-Config belirtilirse yalnızca sağlanan alanlar varsayılanların üzerine yazar; örneğin `dependencies: []` tanımlayarak varsayılan console paketini devre dışı bırakabilirsin.
+Config belirtilirse yalnızca sağlanan alanlar varsayılanların üzerine yazar; örneğin `dependencies: []` tanımlayarak varsayılan console paketini devre dışı bırakabilir ya da `git.initialRelease.enabled: false` yazarak otomatik sürümü kapatabilirsin.
 
 ## Template Layout
 ```

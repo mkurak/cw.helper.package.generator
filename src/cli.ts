@@ -10,7 +10,8 @@ import {
     loadGeneratorConfig,
     ensureConfigFile,
     applyPostInstallConfig,
-    runPostInstallCommands
+    runPostInstallCommands,
+    runGitAutomation
 } from './generatorConfig.js';
 import type { TemplateModule } from './types.js';
 
@@ -115,6 +116,7 @@ program
         await context.save();
         await ensureConfigFile(targetDir, loadedConfig);
         await runPostInstallCommands(loadedConfig.config.postInstall.run, targetDir);
+        await runGitAutomation(targetDir, loadedConfig.config);
 
         console.log(
             `\nCreated package at ${targetDir}. Run \`cd ${path.relative(process.cwd(), targetDir)}\` and install dependencies.`
@@ -185,6 +187,7 @@ program
         await context.save();
         await ensureConfigFile(targetDir, loadedConfig);
         await runPostInstallCommands(loadedConfig.config.postInstall.run, targetDir);
+        await runGitAutomation(targetDir, loadedConfig.config);
         console.log(`\nSynchronized ${targetDir}. Review changes before committing.`);
     });
 

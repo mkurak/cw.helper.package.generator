@@ -61,6 +61,7 @@ export interface PostInstallConfig {
 export interface GeneratorConfig {
     modules?: string[];
     postInstall?: PostInstallConfig;
+    git?: GitConfig;
 }
 
 export interface ResolvedPostInstallConfig {
@@ -72,10 +73,38 @@ export interface ResolvedPostInstallConfig {
 export interface ResolvedGeneratorConfig {
     modules: string[];
     postInstall: ResolvedPostInstallConfig;
+    git: ResolvedGitConfig;
 }
 
 export interface LoadedGeneratorConfig {
     config: ResolvedGeneratorConfig;
     source: 'explicit' | 'local' | 'builtin';
     path?: string;
+}
+
+export type ReleaseType =
+    | 'major'
+    | 'minor'
+    | 'patch'
+    | 'premajor'
+    | 'preminor'
+    | 'prepatch'
+    | 'prerelease';
+
+export interface InitialReleaseConfigInput {
+    enabled?: boolean;
+    type?: ReleaseType;
+}
+
+export interface InitialReleaseConfig {
+    enabled: boolean;
+    type: ReleaseType;
+}
+
+export interface GitConfig {
+    initialRelease?: boolean | InitialReleaseConfigInput;
+}
+
+export interface ResolvedGitConfig {
+    initialRelease: InitialReleaseConfig;
 }
