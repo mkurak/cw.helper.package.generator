@@ -60,7 +60,7 @@ function applyBasePackageJson(ctx: ProjectContext): void {
 
 async function copyBaseTemplates(ctx: ProjectContext): Promise<void> {
     const files = [
-        '.gitignore',
+        '.gitignore.hbs',
         '.prettierrc.json',
         '.prettierignore',
         'eslint.config.mjs',
