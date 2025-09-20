@@ -20,6 +20,7 @@
 - `applyPostInstallConfig` sorgulanan paketler için `npm view <pkg> version --json` çağırarak son sürümü bulur, `^` prefiksiyle `ProjectContext` içine ekler (varsa olduğu gibi bırakır). Testler mock resolver ile çalışır.
 - `runPostInstallCommands` `postInstall.run` listesini shell üzerinden sırasıyla çalıştırır (komut fail ederse süreç durur).
 - `runGitAutomation` git repo + remote varsa ve temizse `npm run release -- <type>` tetikler; config dosyası dışındaki uncommitted değişiklikler bulunursa kullanıcıyı uyarıp adımı atlar.
+- CLI katmanında `--deps`, `--dev-deps`, `--post-command`, `--git-release`, `--git-release-type` gibi seçenekler konfig üzerindeki alanları doğrudan override eder.
 
 ## ProjectContext
 - Constructed with `{ targetDir, packageName, description, isInit }`. It loads or bootstraps `package.json`.

@@ -20,6 +20,8 @@ export {
     ensureConfigFile,
     applyPostInstallConfig,
     runPostInstallCommands,
+    applyConfigOverrides,
     runGitAutomation,
     DEFAULT_CONFIG_FILENAME
 } from './generatorConfig.js';
+export type { ConfigOverrides } from './generatorConfig.js';

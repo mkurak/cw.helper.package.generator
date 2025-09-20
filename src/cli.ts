@@ -10,10 +10,12 @@ import {
     loadGeneratorConfig,
     ensureConfigFile,
     applyPostInstallConfig,
+    applyConfigOverrides,
     runPostInstallCommands,
     runGitAutomation
 } from './generatorConfig.js';
-import type { TemplateModule } from './types.js';
+import type { TemplateModule, ReleaseType } from './types.js';
+import type { ConfigOverrides } from './generatorConfig.js';
 
 const program = new Command();
 const defaultModules = ['base', 'hooks', 'release'];
@@ -41,6 +43,54 @@ async function ensureTargetDir(dir: string, force: boolean): Promise<void> {
     }
 }
 
+function parseCsvOption(value: unknown): string[] | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    const text = String(value).trim();
+    if (text.length === 0) {
+        return [];
+    }
+    return text
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter((entry) => entry.length > 0);
+}
+
+function collectRunCommands(value: string, previous: string[]): string[] {
+    previous.push(value);
+    return previous;
+}
+
+function buildOverrides(options: Record<string, unknown>): ConfigOverrides {
+    const overrides: ConfigOverrides = {};
+    const deps = parseCsvOption(options.deps);
+    if (deps !== undefined) {
+        overrides.dependencies = deps;
+    }
+
+    const devDeps = parseCsvOption(options.devDeps);
+    if (devDeps !== undefined) {
+        overrides.devDependencies = devDeps;
+    }
+
+    if (options.clearPostCommands) {
+        overrides.runCommands = [];
+    } else if (Array.isArray(options.postCommand) && options.postCommand.length > 0) {
+        overrides.runCommands = options.postCommand as string[];
+    }
+
+    if (typeof options.gitRelease === 'boolean') {
+        overrides.gitReleaseEnabled = options.gitRelease;
+    }
+
+    if (typeof options.gitReleaseType === 'string') {
+        overrides.gitReleaseType = options.gitReleaseType as ReleaseType;
+    }
+
+    return overrides;
+}
+
 program
     .name('cw-package-gen')
     .description('Scaffold and synchronize cw helper packages')
@@ -58,6 +108,18 @@ program
     .option('-t, --target <dir>', 'target directory')
     .option('-m, --modules <modules>', 'comma separated module list (default: from config)')
     .option('--config <file>', 'path to generator config JSON')
+    .option('--deps <deps>', 'comma separated dependencies to add (overrides config)')
+    .option('--dev-deps <deps>', 'comma separated dev dependencies to add (overrides config)')
+    .option(
+        '--post-command <command>',
+        'post-install command executed after scaffolding (repeatable)',
+        collectRunCommands,
+        []
+    )
+    .option('--clear-post-commands', 'skip post-install commands')
+    .option('--git-release', 'enable git automation (overrides config)')
+    .option('--no-git-release', 'disable git automation')
+    .option('--git-release-type <type>', 'release type for git automation (default from config)')
     .option('-y, --yes', 'accept defaults without prompting')
     .option('-f, --force', 'overwrite non-empty directories')
     .action(async (options) => {
@@ -72,6 +134,8 @@ program
             configPath: options.config,
             searchDir: targetDir
         });
+        const overrides = buildOverrides(options);
+        applyConfigOverrides(loadedConfig.config, overrides);
         const moduleDefaults = loadedConfig.config.modules.length
             ? loadedConfig.config.modules
             : defaultModules;
@@ -130,6 +194,18 @@ program
     .option('-m, --modules <modules>', 'comma separated module list (default: from config)')
     .option('-y, --yes', 'accept defaults without prompting')
     .option('--config <file>', 'path to generator config JSON')
+    .option('--deps <deps>', 'comma separated dependencies to add (overrides config)')
+    .option('--dev-deps <deps>', 'comma separated dev dependencies to add (overrides config)')
+    .option(
+        '--post-command <command>',
+        'post-install command executed after synchronization (repeatable)',
+        collectRunCommands,
+        []
+    )
+    .option('--clear-post-commands', 'skip post-install commands')
+    .option('--git-release', 'enable git automation (overrides config)')
+    .option('--no-git-release', 'disable git automation')
+    .option('--git-release-type <type>', 'release type for git automation (default from config)')
     .action(async (options) => {
         const targetDir = path.resolve(options.target ?? '.');
         const pkgPath = path.join(targetDir, 'package.json');
@@ -141,6 +217,8 @@ program
             configPath: options.config,
             searchDir: targetDir
         });
+        const overrides = buildOverrides(options);
+        applyConfigOverrides(loadedConfig.config, overrides);
 
         const moduleDefaults = loadedConfig.config.modules.length
             ? loadedConfig.config.modules

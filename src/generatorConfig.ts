@@ -209,6 +209,46 @@ export async function loadGeneratorConfig(options: {
     return { config: cloneResolvedConfig(builtinConfig), source: 'builtin' };
 }
 
+export interface ConfigOverrides {
+    dependencies?: string[];
+    devDependencies?: string[];
+    runCommands?: string[];
+    gitReleaseEnabled?: boolean;
+    gitReleaseType?: ReleaseType;
+}
+
+function uniqueList(values: string[]): string[] {
+    return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+export function applyConfigOverrides(
+    config: ResolvedGeneratorConfig,
+    overrides: ConfigOverrides
+): void {
+    if (overrides.dependencies !== undefined) {
+        config.postInstall.dependencies = uniqueList(overrides.dependencies);
+    }
+
+    if (overrides.devDependencies !== undefined) {
+        config.postInstall.devDependencies = uniqueList(overrides.devDependencies);
+    }
+
+    if (overrides.runCommands !== undefined) {
+        config.postInstall.run = uniqueList(overrides.runCommands);
+    }
+
+    if (overrides.gitReleaseEnabled !== undefined) {
+        config.git.initialRelease.enabled = overrides.gitReleaseEnabled;
+    }
+
+    if (overrides.gitReleaseType) {
+        const type = assertReleaseType(overrides.gitReleaseType);
+        if (type) {
+            config.git.initialRelease.type = type;
+        }
+    }
+}
+
 export async function ensureConfigFile(
     targetDir: string,
     loaded: LoadedGeneratorConfig

@@ -67,6 +67,11 @@ Key options:
 - `-t, --target <dir>` – explicit destination directory (default: `.`)
 - `-m, --modules <list>` – comma-separated module ids to apply (default: config `modules` array)
 - `--config <file>` – path to a custom generator config JSON (fallback: search target directory)
+- `--deps <list>` / `--dev-deps <list>` – override dependency lists without editing JSON
+- `--post-command <cmd>` – append post-install commands (repeatable)
+- `--clear-post-commands` – skip all post-install commands
+- `--git-release` / `--no-git-release` – toggle automatic release after scaffolding
+- `--git-release-type <type>` – change the release bump type used when automation runs
 - `-y, --yes` – skip interactive prompts and accept defaults
 - `-f, --force` – allow scaffolding into a non-empty directory
 
@@ -79,7 +84,7 @@ Re-applies templates to an existing package. `package.json` must already be pres
 cw-package-gen sync [options]
 ```
 
-Options mirror `init` (minus `--force`). When run without `--modules` the CLI prompts for the modules to sync. `sync` never deletes custom files—review the git diff after running to decide what to keep. `--config <file>` is also accepted to override the config resolution.
+Options mirror `init` (minus `--force`). When run without `--modules` the CLI prompts for the modules to sync. `sync` never deletes custom files—review the git diff after running to decide what to keep. CLI overrides (`--deps`, `--dev-deps`, `--post-command`, `--git-release` vb.) aynı şekilde çalışır.
 
 ## Module Catalog
 Each module is self-contained and can be applied independently.

@@ -5,7 +5,8 @@ import { ProjectContext } from '../src/context.js';
 import {
     loadGeneratorConfig,
     applyPostInstallConfig,
-    DEFAULT_CONFIG_FILENAME
+    DEFAULT_CONFIG_FILENAME,
+    applyConfigOverrides
 } from '../src/generatorConfig.js';
 
 const tempDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'cw-gen-config-'));
@@ -85,6 +86,28 @@ describe('post install application', () => {
 
         expect(context.packageJson.dependencies).toEqual({ 'dep-one': '^1.2.3' });
         expect(context.packageJson.devDependencies).toEqual({ 'dep-two': '^4.5.6' });
+
+        fs.removeSync(dir);
+    });
+});
+
+describe('applyConfigOverrides', () => {
+    it('overrides dependency lists, commands, and git automation flags', async () => {
+        const dir = tempDir();
+        const loaded = await loadGeneratorConfig({ searchDir: dir });
+
+        applyConfigOverrides(loaded.config, {
+            dependencies: ['foo'],
+            devDependencies: [],
+            runCommands: ['npm run custom'],
+            gitReleaseEnabled: false,
+            gitReleaseType: 'minor'
+        });
+
+        expect(loaded.config.postInstall.dependencies).toEqual(['foo']);
+        expect(loaded.config.postInstall.devDependencies).toEqual([]);
+        expect(loaded.config.postInstall.run).toEqual(['npm run custom']);
+        expect(loaded.config.git.initialRelease).toEqual({ enabled: false, type: 'minor' });
 
         fs.removeSync(dir);
     });
