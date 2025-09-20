@@ -314,7 +314,10 @@ export async function applyPostInstallConfig(
         }
     }
 
-    const additions: { dependencies: Record<string, string>; devDependencies: Record<string, string> } = {
+    const additions: {
+        dependencies: Record<string, string>;
+        devDependencies: Record<string, string>;
+    } = {
         dependencies: {},
         devDependencies: {}
     };
@@ -367,7 +370,7 @@ async function isGitRepository(cwd: string): Promise<boolean> {
     try {
         await execGit(['rev-parse', '--is-inside-work-tree'], cwd);
         return true;
-    } catch (error) {
+    } catch {
         return false;
     }
 }
@@ -380,7 +383,7 @@ async function hasGitRemote(cwd: string): Promise<boolean> {
             .map((line) => line.trim())
             .filter(Boolean);
         return remotes.length > 0;
-    } catch (error) {
+    } catch {
         return false;
     }
 }
@@ -451,23 +454,21 @@ export async function runGitAutomation(
     }
 
     if (statusEntries.length > 0) {
-        const disallowed = statusEntries.filter(
-            (entry) => entry.path !== DEFAULT_CONFIG_FILENAME
-        );
+        const disallowed = statusEntries.filter((entry) => entry.path !== DEFAULT_CONFIG_FILENAME);
         if (disallowed.length > 0) {
             console.warn(
                 'Skipping initial release: working tree has uncommitted changes (excluding config). Commit or stash them first.'
             );
-            disallowed.slice(0, 5).forEach((entry) => console.warn(`  ${entry.code} ${entry.path}`));
+            disallowed
+                .slice(0, 5)
+                .forEach((entry) => console.warn(`  ${entry.code} ${entry.path}`));
             if (disallowed.length > 5) {
                 console.warn(`  ... ${disallowed.length - 5} more entries`);
             }
             return;
         }
 
-        const configEntry = statusEntries.find(
-            (entry) => entry.path === DEFAULT_CONFIG_FILENAME
-        );
+        const configEntry = statusEntries.find((entry) => entry.path === DEFAULT_CONFIG_FILENAME);
         if (configEntry) {
             console.warn(
                 `Skipping initial release: config file (${DEFAULT_CONFIG_FILENAME}) has uncommitted changes. Commit it before releasing.`
