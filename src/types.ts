@@ -51,3 +51,31 @@ export interface TemplateModule {
     description: string;
     apply(context: ModuleContext): Promise<void>;
 }
+
+export interface PostInstallConfig {
+    dependencies?: string[];
+    devDependencies?: string[];
+    run?: string | string[];
+}
+
+export interface GeneratorConfig {
+    modules?: string[];
+    postInstall?: PostInstallConfig;
+}
+
+export interface ResolvedPostInstallConfig {
+    dependencies: string[];
+    devDependencies: string[];
+    run: string[];
+}
+
+export interface ResolvedGeneratorConfig {
+    modules: string[];
+    postInstall: ResolvedPostInstallConfig;
+}
+
+export interface LoadedGeneratorConfig {
+    config: ResolvedGeneratorConfig;
+    source: 'explicit' | 'local' | 'builtin';
+    path?: string;
+}

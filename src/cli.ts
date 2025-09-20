@@ -6,6 +6,12 @@ import inquirer from 'inquirer';
 import fs from 'fs-extra';
 import { ProjectContext } from './context.js';
 import { modules, getModule } from './modules/index.js';
+import {
+    loadGeneratorConfig,
+    ensureConfigFile,
+    applyPostInstallConfig,
+    runPostInstallCommands
+} from './generatorConfig.js';
 import type { TemplateModule } from './types.js';
 
 const program = new Command();
@@ -49,7 +55,8 @@ program
         'Generated with cw.helper.package.generator'
     )
     .option('-t, --target <dir>', 'target directory')
-    .option('-m, --modules <modules>', 'comma separated module list (default: base,hooks,release)')
+    .option('-m, --modules <modules>', 'comma separated module list (default: from config)')
+    .option('--config <file>', 'path to generator config JSON')
     .option('-y, --yes', 'accept defaults without prompting')
     .option('-f, --force', 'overwrite non-empty directories')
     .action(async (options) => {
@@ -60,12 +67,20 @@ program
         const force = Boolean(options.force);
         await ensureTargetDir(targetDir, force);
 
+        const loadedConfig = await loadGeneratorConfig({
+            configPath: options.config,
+            searchDir: targetDir
+        });
+        const moduleDefaults = loadedConfig.config.modules.length
+            ? loadedConfig.config.modules
+            : defaultModules;
+
         const moduleIds = options.modules
             ? String(options.modules)
                   .split(',')
                   .map((id: string) => id.trim())
                   .filter(Boolean)
-            : defaultModules.slice();
+            : moduleDefaults.slice();
 
         let selectedIds = moduleIds;
         if (!options.yes && !options.modules) {
@@ -78,10 +93,10 @@ program
                         name: `${mod.id} – ${mod.description}`,
                         value: mod.id
                     })),
-                    default: defaultModules
+                    default: moduleDefaults
                 }
             ]);
-            selectedIds = answers.modules.length > 0 ? answers.modules : defaultModules;
+            selectedIds = answers.modules.length > 0 ? answers.modules : moduleDefaults;
         }
 
         const selectedModules = resolveModuleIds(selectedIds);
@@ -96,7 +111,10 @@ program
             await mod.apply(context);
         }
 
+        await applyPostInstallConfig(context, loadedConfig.config);
         await context.save();
+        await ensureConfigFile(targetDir, loadedConfig);
+        await runPostInstallCommands(loadedConfig.config.postInstall.run, targetDir);
 
         console.log(
             `\nCreated package at ${targetDir}. Run \`cd ${path.relative(process.cwd(), targetDir)}\` and install dependencies.`
@@ -107,8 +125,9 @@ program
     .command('sync')
     .description('Synchronize an existing package with cw templates')
     .option('-t, --target <dir>', 'target directory (default: current directory)')
-    .option('-m, --modules <modules>', 'comma separated module list (default: base,hooks,release)')
+    .option('-m, --modules <modules>', 'comma separated module list (default: from config)')
     .option('-y, --yes', 'accept defaults without prompting')
+    .option('--config <file>', 'path to generator config JSON')
     .action(async (options) => {
         const targetDir = path.resolve(options.target ?? '.');
         const pkgPath = path.join(targetDir, 'package.json');
@@ -116,12 +135,21 @@ program
             throw new Error(`No package.json found at ${pkgPath}`);
         }
 
+        const loadedConfig = await loadGeneratorConfig({
+            configPath: options.config,
+            searchDir: targetDir
+        });
+
+        const moduleDefaults = loadedConfig.config.modules.length
+            ? loadedConfig.config.modules
+            : defaultModules;
+
         const moduleIds = options.modules
             ? String(options.modules)
                   .split(',')
                   .map((id: string) => id.trim())
                   .filter(Boolean)
-            : defaultModules.slice();
+            : moduleDefaults.slice();
 
         let selectedIds = moduleIds;
         if (!options.yes && !options.modules) {
@@ -134,10 +162,10 @@ program
                         name: `${mod.id} – ${mod.description}`,
                         value: mod.id
                     })),
-                    default: moduleIds
+                    default: moduleDefaults
                 }
             ]);
-            selectedIds = answers.modules.length > 0 ? answers.modules : moduleIds;
+            selectedIds = answers.modules.length > 0 ? answers.modules : moduleDefaults;
         }
 
         const selectedModules = resolveModuleIds(selectedIds);
@@ -153,7 +181,10 @@ program
             await mod.apply(context);
         }
 
+        await applyPostInstallConfig(context, loadedConfig.config);
         await context.save();
+        await ensureConfigFile(targetDir, loadedConfig);
+        await runPostInstallCommands(loadedConfig.config.postInstall.run, targetDir);
         console.log(`\nSynchronized ${targetDir}. Review changes before committing.`);
     });
 

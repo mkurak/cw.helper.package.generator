@@ -9,6 +9,7 @@
   - [init](#init)
   - [sync](#sync)
 - [Module Catalog](#module-catalog)
+- [Configuration File](#configuration-file)
 - [Template Layout](#template-layout)
 - [Programmatic Usage](#programmatic-usage)
 - [Development](#development)
@@ -64,7 +65,8 @@ Key options:
 - `-n, --name <name>` – package name (fallback: target directory name)
 - `-d, --description <text>` – npm description stored in `package.json`
 - `-t, --target <dir>` – explicit destination directory (default: `.`)
-- `-m, --modules <list>` – comma-separated module ids to apply (default: `base,hooks,release`)
+- `-m, --modules <list>` – comma-separated module ids to apply (default: config `modules` array)
+- `--config <file>` – path to a custom generator config JSON (fallback: search target directory)
 - `-y, --yes` – skip interactive prompts and accept defaults
 - `-f, --force` – allow scaffolding into a non-empty directory
 
@@ -77,7 +79,7 @@ Re-applies templates to an existing package. `package.json` must already be pres
 cw-package-gen sync [options]
 ```
 
-Options mirror `init` (minus `--force`). When run without `--modules` the CLI prompts for the modules to sync. `sync` never deletes custom files—review the git diff after running to decide what to keep.
+Options mirror `init` (minus `--force`). When run without `--modules` the CLI prompts for the modules to sync. `sync` never deletes custom files—review the git diff after running to decide what to keep. `--config <file>` is also accepted to override the config resolution.
 
 ## Module Catalog
 Each module is self-contained and can be applied independently.
@@ -87,6 +89,26 @@ Each module is self-contained and can be applied independently.
 - **release** – Provides release automation (`scripts/release.mjs`, `scripts/smoke.mjs`) and a GitHub Actions workflow (`.github/workflows/publish.yml`) that publishes to npm with provenance. Adds `npm run release` and `npm run prepublishOnly` scripts.
 
 All modules rely on Handlebars templates under `templates/modules/<moduleId>`. You can extend the catalog by adding a new directory, exporting a module from `src/modules`, and shipping the templates alongside it.
+
+## Configuration File
+Generator davranışını `cw-package-gen.config.json` dosyasıyla özelleştirebilirsin. CLI, `--config <path>` argümanı verilmezse önce hedef dizinde bu dosyayı arar; bulamazsa dahili varsayılanı kullanır ve yeni paket oluştururken aynı dosyayı hedefe yazar.
+
+```json
+{
+  "modules": ["base", "hooks", "release"],
+  "postInstall": {
+    "dependencies": ["cw.helper.colored.console"],
+    "devDependencies": ["cw.helper.dev.runner"],
+    "run": ["npm install"]
+  }
+}
+```
+
+- `modules` – uygulanacak modül kimlikleri (CLI seçenekleriyle override edilebilir).
+- `postInstall.dependencies` / `devDependencies` – paket isim listeleri. Sürüm girmen gerekmez; generator en güncel sürümü sorgulayıp `^` prefiksiyle `package.json` içine ekler (mevcut satırlar korunur).
+- `postInstall.run` – modüller ve manifest kaydedildikten sonra sırayla çalıştırılacak komutlar. Boş veya belirtilmemişse adım atlanır.
+
+Config belirtilirse yalnızca sağlanan alanlar varsayılanların üzerine yazar; örneğin `dependencies: []` tanımlayarak varsayılan console paketini devre dışı bırakabilirsin.
 
 ## Template Layout
 ```

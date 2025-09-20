@@ -13,6 +13,13 @@
 - Interactive module selection uses `inquirer` unless `--yes` or explicit `--modules` is provided.
 - `ensureTargetDir` prevents scaffolding into non-empty directories unless `--force` is passed.
 
+## Generator Config
+- Config loader lives in `src/generatorConfig.ts`; exported helpers handle locating, normalising, and persisting `cw-package-gen.config.json`.
+- Search order: CLI `--config <path>` → target dir (`DEFAULT_CONFIG_FILENAME`) → builtin defaults. When builtin kullanılırsa `ensureConfigFile` hedefe varsayılan dosyayı yazar.
+- Defaults include applying `base/hooks/release`, ek `cw.helper.colored.console` dependencies ve `cw.helper.dev.runner` dev dependencies.
+- `applyPostInstallConfig` sorgulanan paketler için `npm view <pkg> version --json` çağırarak son sürümü bulur, `^` prefiksiyle `ProjectContext` içine ekler (varsa olduğu gibi bırakır). Testler mock resolver ile çalışır.
+- `runPostInstallCommands` `postInstall.run` listesini shell üzerinden sırasıyla çalıştırır.
+
 ## ProjectContext
 - Constructed with `{ targetDir, packageName, description, isInit }`. It loads or bootstraps `package.json`.
 - Template variables exposed to Handlebars: `packageName`, `description`, `packageSlug`, `year`, `date`.

@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0] - 2025-09-20
+### Added
+- Config-driven workflow via `cw-package-gen.config.json`, allowing module selection, dependency injection, and post-run commands.
+- Automatic injection of `cw.helper.colored.console` and `cw.helper.dev.runner` through the default config.
+- CLI option `--config` plus helpers to persist default config files in generated packages.
+
+### Changed
+- Post-install handling fetches latest npm versions and appends them to `package.json` without hardcoding ranges.
+- Documentation and dev notes updated to describe the configurable pipeline.
+
 ## [1.0.3] - 2025-09-20
 ### Fixed
 - Added repository metadata so npm provenance verification succeeds during the publish workflow.
