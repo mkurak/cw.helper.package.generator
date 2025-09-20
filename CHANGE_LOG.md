@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0] - 2025-09-20
+### Added
+- CLI bayrakları (`--deps`, `--dev-deps`, `--post-command`, `--clear-post-commands`, `--git-release`, `--no-git-release`, `--git-release-type`) ile JSON düzenlemeye gerek kalmadan anlık yapılandırma yapılabiliyor.
+- `applyConfigOverrides` yardımcı fonksiyonu programatik kullanımlar için dışa açıldı.
+
+### Changed
+- README ve geliştirici notları CLI/JSON override önceliklerini ve kullanım örneklerini içerecek şekilde güncellendi.
+
 ## [1.2.0] - 2025-09-20
 ### Added
 - Default post-install command chain (install → format → lint -- --fix → prepare) runs automatically after scaffolding.

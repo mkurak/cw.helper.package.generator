@@ -1,103 +1,65 @@
 # cw.helper.package.generator
 
-`cw.helper.package.generator` is the CLI we use to scaffold and synchronize **cw** packages with a shared toolchain. It keeps new projects aligned with our TypeScript, Jest, ESLint, Prettier, git hook, and release conventions so manual boilerplate stays out of the way.
+`cw-package-gen` CLI’si, cw ekosistemindeki TypeScript paketlerini tek komutla standart hale getirmek için geliştirildi. Şablon bazlı dosyalar, Jest/ESLint/Prettier ayarları, git hook’ları ve release otomasyonu aynı anda kuruluyor; ilerleyen zamanda şablonları güncellediğimizde `sync` komutuyla tüm paketleri tekrar hizalayabiliyoruz.
 
-## Table of Contents
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Commands](#commands)
-  - [init](#init)
-  - [sync](#sync)
-- [Module Catalog](#module-catalog)
-- [Configuration File](#configuration-file)
-- [Template Layout](#template-layout)
-- [Programmatic Usage](#programmatic-usage)
-- [Development](#development)
-- [Release Workflow](#release-workflow)
-- [License](#license)
+## İçindekiler
+- [Kurulum](#kurulum)
+- [Hızlı Başlangıç](#hızlı-başlangıç)
+- [Komutlar](#komutlar)
+- [Yapılandırma Dosyası](#yapılandırma-dosyası)
+- [CLI Overrides](#cli-overrides)
+- [Varsayılan Akış](#varsayılan-akış)
+- [Geliştirme](#geliştirme)
 
-## Installation
-Install locally when you only need the generator inside a repository:
-
-```bash
-npm install --save-dev cw.helper.package.generator
-```
-
-Or install globally to re-use it across projects:
-
+## Kurulum
 ```bash
 npm install --global cw.helper.package.generator
 ```
+Yerel bağımlılık olarak kullanacaksan `npx cw-package-gen` yeterli.
 
-The CLI entry point is `cw-package-gen` (also accessible via `npx cw-package-gen`).
-
-## Quick Start
-Create a fresh helper package in an empty directory:
-
+## Hızlı Başlangıç
 ```bash
-mkdir cw.helper.example
-cd cw.helper.example
 cw-package-gen init --name cw.helper.example --description "Example helper"
+cd cw.helper.example
 npm install
 ```
+Komut; TypeScript yapılandırmaları, Jest/ESLint/Prettier ayarları, README/CHANGE_LOG/DEV_NOTES şablonları, git hook’ları ve release workflow’unu hazırlar.
 
-By default `init` applies the `base`, `hooks`, and `release` modules, giving you ready-to-use tooling, git hooks, and CI workflows.
+## Komutlar
+### `init`
+Yeni bir paket oluşturur.
 
-Once templates evolve you can bring an existing package back in sync:
+| Parametre | Açıklama | Varsayılan |
+|-----------|----------|------------|
+| `--name <name>` | Paket adı/dizin adı | Çalışılan dizin |
+| `--description <desc>` | `package.json` açıklaması | `Generated with cw.helper.package.generator` |
+| `--target <dir>` | Hedef dizin | `<name>` veya mevcut dizin |
+| `--modules <list>` | Virgülle ayrılmış modüller | Config `modules` alanı |
+| `--config <file>` | JSON konfigürasyon yolu | Dizin içinde `cw-package-gen.config.json` veya dahili varsayılan |
+| `--deps <list>` / `--dev-deps <list>` | Bağımlılık listelerini o koşum için override eder | Config değeri |
+| `--post-command <cmd>` | Post-install komutu ekler (birden fazla kullanılabilir) | Config değeri |
+| `--clear-post-commands` | Post-install komutlarını tamamen devre dışı bırakır | - |
+| `--git-release` / `--no-git-release` | Otomatik release adımını aç/kapat | Config değeri |
+| `--git-release-type <type>` | Otomatik release sırasında kullanılacak semver tipi | Config değeri |
+| `--yes` | Soruları atla | `false` |
+| `--force` | Dizin dolu olsa bile devam et | `false` |
+
+### `sync`
+Mevcut bir pakete şablon güncellemelerini uygular.
 
 ```bash
-cd cw.helper.example
-cw-package-gen sync
+cw-package-gen sync --modules base,release
 ```
 
-Diff the changes, commit, and publish as usual.
+`init` ile aynı bayrakları destekler (sadece `--force` yok). Konfigürasyon + CLI override kombinasyonu ile yalnızca o koşum için davranışı değiştirebilirsin.
 
-## Commands
+## Yapılandırma Dosyası
+CLI, çalıştırıldığında aşağıdaki sırayla konfig arar:
+1. `--config <path>` verilmişse o dosya,
+2. hedef dizindeki `cw-package-gen.config.json`,
+3. yukarıdakiler yoksa dahili varsayılan.
 
-### init
-Scaffolds a brand-new package directory.
-
-```
-cw-package-gen init [options]
-```
-
-Key options:
-- `-n, --name <name>` – package name (fallback: target directory name)
-- `-d, --description <text>` – npm description stored in `package.json`
-- `-t, --target <dir>` – explicit destination directory (default: `.`)
-- `-m, --modules <list>` – comma-separated module ids to apply (default: config `modules` array)
-- `--config <file>` – path to a custom generator config JSON (fallback: search target directory)
-- `--deps <list>` / `--dev-deps <list>` – override dependency lists without editing JSON
-- `--post-command <cmd>` – append post-install commands (repeatable)
-- `--clear-post-commands` – skip all post-install commands
-- `--git-release` / `--no-git-release` – toggle automatic release after scaffolding
-- `--git-release-type <type>` – change the release bump type used when automation runs
-- `-y, --yes` – skip interactive prompts and accept defaults
-- `-f, --force` – allow scaffolding into a non-empty directory
-
-Interactive mode displays each available module with a short description so you can opt in/out quickly.
-
-### sync
-Re-applies templates to an existing package. `package.json` must already be present.
-
-```
-cw-package-gen sync [options]
-```
-
-Options mirror `init` (minus `--force`). When run without `--modules` the CLI prompts for the modules to sync. `sync` never deletes custom files—review the git diff after running to decide what to keep. CLI overrides (`--deps`, `--dev-deps`, `--post-command`, `--git-release` vb.) aynı şekilde çalışır.
-
-## Module Catalog
-Each module is self-contained and can be applied independently.
-
-- **base** – Standard TypeScript library setup (ESM build, Jest config, Prettier/ESLint rules) plus README/DEV_NOTES/CHANGE_LOG templates, tsconfig pair, sample source/test, `.gitignore`, and MIT license. Also injects package scripts (`build`, `test`, `lint`, `format`, etc.), exports map, `publishConfig`, and the `node >= 18` engine requirement.
-- **hooks** – Installs `.githooks/pre-commit` with formatting → lint → coverage checks and a `scripts/setup-hooks.cjs` helper. Adds `npm run hooks:install` and wires it into `npm run prepare` so hooks stay configured automatically.
-- **release** – Provides release automation (`scripts/release.mjs`, `scripts/smoke.mjs`) and a GitHub Actions workflow (`.github/workflows/publish.yml`) that publishes to npm with provenance. Adds `npm run release` and `npm run prepublishOnly` scripts.
-
-All modules rely on Handlebars templates under `templates/modules/<moduleId>`. You can extend the catalog by adding a new directory, exporting a module from `src/modules`, and shipping the templates alongside it.
-
-## Configuration File
-Generator davranışını `cw-package-gen.config.json` dosyasıyla özelleştirebilirsin. CLI, `--config <path>` argümanı verilmezse önce hedef dizinde bu dosyayı arar; bulamazsa dahili varsayılanı kullanır ve yeni paket oluştururken aynı dosyayı hedefe yazar.
-
+Dahili JSON örneği:
 ```json
 {
   "modules": ["base", "hooks", "release"],
@@ -119,77 +81,37 @@ Generator davranışını `cw-package-gen.config.json` dosyasıyla özelleştire
   }
 }
 ```
+- `modules`: Çalıştırılacak modül kimlikleri.
+- `postInstall.dependencies` / `devDependencies`: Eklenmesi istenen paket adları; `npm view` ile son sürüm alınır ve `^` ön ekiyle `package.json`’a yazılır.
+- `postInstall.run`: Şablonlar işlendi ve `package.json` kaydedildikten sonra koşacak komut listesi.
+- `git.initialRelease`: Repo temiz ve remote bağlıysa `npm run release -- <type>` çağırarak ilk sürümü çıkartır.
 
-- `modules` – uygulanacak modül kimlikleri (CLI seçenekleriyle override edilebilir).
-- `postInstall.dependencies` / `devDependencies` – paket isim listeleri. Sürüm girmen gerekmez; generator en güncel sürümü sorgulayıp `^` prefiksiyle `package.json` içine ekler (mevcut satırlar korunur).
-- `postInstall.run` – modüller ve manifest kaydedildikten sonra sırayla çalıştırılacak komutlar. Boş veya belirtilmemişse adım atlanır.
-- `git.initialRelease` – git repo ve remote uygunsa `npm run release -- <type>` çağırarak otomatik sürüm çıkışı yapar. `enabled: false` ile devre dışı bırakabilir, `type` alanını release script’inin desteklediği seçeneklerden biriyle değiştirebilirsin.
+Konfig dosyasını düzenlemek kalıcı değişiklik sağlar; eğer sadece tek seferlik davranış istiyorsan CLI overrides kullan.
 
-Config belirtilirse yalnızca sağlanan alanlar varsayılanların üzerine yazar; örneğin `dependencies: []` tanımlayarak varsayılan console paketini devre dışı bırakabilir ya da `git.initialRelease.enabled: false` yazarak otomatik sürümü kapatabilirsin.
+## CLI Overrides
+CLI bayrakları config dosyasını dokunmadan yalnızca o komut çalıştırması için değerleri override eder:
+- `--deps` / `--dev-deps`: İlgili bağımlılık listelerini tamamen değiştirir.
+- `--post-command`: Belirttiğin komutları sırayla listeye ekler; bayrak yoksa config’ten gelenler kullanılır.
+- `--clear-post-commands`: Komut listesi boşaltılır (örneğin CI ortamında sadece çıktıları görmek için).
+- `--git-release` veya `--no-git-release`: Otomatik release adımını zorla aç/kapat.
+- `--git-release-type`: Release script’inin kullanacağı semver artış tipini (`patch`, `minor`, `major` vb.) override eder.
 
-## Template Layout
+Override edilmiş değerler yalnızca ilgili komut süresince geçerlidir; JSON dosyası otomatik yazılmaz.
+
+## Varsayılan Akış
+1. Seçilen modüller çalışır (dosya kopyalama, script/bağımlılık ekleme).
+2. `applyPostInstallConfig` eksik paketleri çözerek son sürümlerini `package.json`’a ekler.
+3. `cw-package-gen.config.json` yoksa oluşturulur.
+4. Post-install komut listesi sırayla çalışır (varsayılan: `npm install → npm run format → npm run lint -- --fix → npm run prepare`).
+5. Git ayarı etkinse, repo temiz + remote mevcutsa `npm run release -- <type>` çağrılır; çalışma alanında config dışında değişiklik varsa adım atlanır ve bilgilendirme yapılır.
+
+## Geliştirme
+```bash
+npm install
+npm run lint
+npm run test
+npm run build
 ```
-templates/
-  modules/
-    base/
-      CHANGE_LOG.md.hbs
-      DEV_NOTES.md.hbs
-      README.md.hbs
-      LICENSE.hbs
-      eslint.config.mjs
-      jest.config.cjs
-      tsconfig*.json
-      src/index.ts.hbs
-      tests/index.test.ts.hbs
-    hooks/
-      .githooks/pre-commit.hbs
-      scripts/setup-hooks.cjs.hbs
-    release/
-      .github/workflows/publish.yml.hbs
-      scripts/release.mjs.hbs
-      scripts/smoke.mjs.hbs
-```
-
-Files ending with `.hbs` are rendered through Handlebars and receive the variables exposed by `ProjectContext` (`packageName`, `description`, `packageSlug`, `year`, `date`). Non-template files are copied verbatim.
-
-### Customising Templates
-- Adjust defaults by editing the files above and re-building the package.
-- Add new placeholders by updating `ProjectContext.variables` in `src/context.ts` and using them inside templates.
-- To ship project-specific defaults (e.g. extra scripts) create a dedicated module and register it in `src/modules/index.ts`.
-
-## Programmatic Usage
-The package also exports the underlying primitives for custom tooling:
-
-```ts
-import { ProjectContext, modules, getModule } from 'cw.helper.package.generator';
-
-const context = new ProjectContext({
-  targetDir: '/tmp/example',
-  packageName: 'cw.helper.example',
-  description: 'Example helper',
-  isInit: true
-});
-
-await modules[0].apply(context); // run the base module
-await context.save();
-```
-
-`ProjectContext` handles `package.json` merging, dependency/scripting helpers, and template rendering. `getModule(id)` lets you resolve modules dynamically (useful when building higher-level orchestrations).
-
-## Development
-Run these commands when contributing to the generator itself:
-
-- `npm run build` – compile TypeScript into `dist/`
-- `npm run dev` – print CLI help using `ts-node` (handy while iterating)
-- `npm run test` – execute Jest (uses Node’s ESM support)
-- `npm run lint` / `npm run format` – ensure code quality
-- `npm run test:coverage` – enforce coverage thresholds in CI
-- `npm run prepare` – build and install git hooks
-
-The project targets Node.js 18+, relies on `fs-extra` for filesystem work, `commander` for CLI parsing, `inquirer` for prompts, and Handlebars for template rendering.
-
-## Release Workflow
-`npm run release -- <type>` wraps `npm version`, commits the bump, and pushes tags. Publish automation lives in `.github/workflows/publish.yml` and expects an `NPM_TOKEN` secret with publish rights (provenance enabled). A smoke test runs prior to `npm publish` to ensure generated artifacts are installable.
-
-## License
-MIT © 2025 Mert Kurak
+- Kaynak kodlar `src/` altında; `tsconfig.build.json` ile `dist/` klasörüne ESM çıktı üretilir.
+- Jest testleri `tests/` dizininde; yeni modül eklerken örnek testleri güncelle.
+- `npm run release -- <type>` komutu semantik sürüm atar, commit + tag oluşturup remote’a gönderir (CI yayın akışıyla uyumlu).
