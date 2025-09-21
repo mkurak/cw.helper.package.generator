@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.5] - 2025-09-21
+### Changed
+- Added a standardized post-commit hook to mirror automatic tagging across all packages.
+
 ## [2.0.4] - 2025-09-21
 ### Changed
 - Updated generated pre-commit hooks to run only format, lint, and coverage checks.

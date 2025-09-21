@@ -1,6 +1,6 @@
 {
   "name": "cw.helper.package.generator",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
