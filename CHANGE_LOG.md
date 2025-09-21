@@ -1,6 +1,8 @@
 # Changelog
 
-# Changelog
+## [2.0.2] - 2025-09-21
+### Changed
+- Removed the `release` npm script from generated packages, updated templates/docs, and updated git automation to run `npm version <type>` followed by `git push --follow-tags`.
 
 ## [2.0.1] - 2025-09-20
 ### Fixed
@@ -41,7 +43,7 @@
 ## [1.2.0] - 2025-09-20
 ### Added
 - Default post-install command chain (install → format → lint -- --fix → prepare) runs automatically after scaffolding.
-- Optional git automation triggers `npm run release` when the repository is clean and remotes exist.
+- Optional git automation triggers `npm version <type>` when the repository is clean and remotes exist.
 
 ### Changed
 - README/DEV_NOTES updated with automation details and configuration guidance.

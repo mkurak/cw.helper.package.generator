@@ -40,7 +40,7 @@ Yeni bir paket oluşturur.
 | `--post-command <cmd>` | Post-install komutu ekler (birden fazla kullanılabilir) | Config değeri |
 | `--clear-post-commands` | Post-install komutlarını tamamen devre dışı bırakır | - |
 | `--git-release` / `--no-git-release` | Otomatik release adımını aç/kapat | Config değeri |
-| `--git-release-type <type>` | Otomatik release sırasında kullanılacak semver tipi | Config değeri |
+| `--git-release-type <type>` | Otomatik `npm version` adımı için semver tipi | Config değeri |
 | `--yes` | Soruları atla | `false` |
 | `--force` | Dizin dolu olsa bile devam et | `false` |
 
@@ -75,7 +75,7 @@ Dahili JSON örneği:
 - `modules`: Çalıştırılacak modül kimlikleri (yalnızca ilk kurulum sırasında kullanılır).
 - `postInstall.dependencies` / `devDependencies`: Eklenmesi istenen paket adları; `npm view` ile son sürüm alınır ve `^` ön ekiyle `package.json`’a yazılır.
 - `postInstall.run`: Şablonlar işlendi ve `package.json` kaydedildikten sonra koşacak komut listesi.
-- `git.initialRelease`: Repo temiz ve remote bağlıysa `npm run release -- <type>` çağırarak ilk sürümü çıkartır.
+- `git.initialRelease`: Repo temiz ve remote bağlıysa `npm version <type>` çalıştırıp ardından `git push --follow-tags` gönderir.
 
 Konfig dosyasını düzenlemek kalıcı değişiklik sağlar; eğer sadece tek seferlik davranış istiyorsan CLI overrides kullan.
 
@@ -85,7 +85,7 @@ CLI bayrakları config dosyasını dokunmadan yalnızca o komut çalıştırmas�
 - `--post-command`: Belirttiğin komutları sırayla listeye ekler; bayrak yoksa config’ten gelenler kullanılır.
 - `--clear-post-commands`: Komut listesi boşaltılır (örneğin CI ortamında sadece çıktıları görmek için).
 - `--git-release` veya `--no-git-release`: Otomatik release adımını zorla aç/kapat.
-- `--git-release-type`: Release script’inin kullanacağı semver artış tipini (`patch`, `minor`, `major` vb.) override eder.
+- `--git-release-type`: Otomatik `npm version` adımı için kullanılacak semver artış tipini (`patch`, `minor`, `major` vb.) override eder.
 
 Override edilmiş değerler yalnızca ilgili komut süresince geçerlidir; JSON dosyası otomatik yazılmaz.
 
@@ -94,7 +94,7 @@ Override edilmiş değerler yalnızca ilgili komut süresince geçerlidir; JSON 
 2. `applyPostInstallConfig` eksik paketleri çözerek son sürümlerini `package.json`’a ekler.
 3. `cw-package-gen.config.json` yoksa oluşturulur.
 4. Post-install komut listesi sırayla çalışır (varsayılan: `npm install → npm run format → npm run lint -- --fix → npm run prepare`).
-5. Git ayarı etkinse, repo temiz + remote mevcutsa `npm run release -- <type>` çağrılır; çalışma alanında config dışında değişiklik varsa adım atlanır ve bilgilendirme yapılır.
+5. Git ayarı etkinse, repo temiz + remote mevcutsa `npm version <type>` ve ardından `git push --follow-tags` çağrılır; çalışma alanında config dışında değişiklik varsa adım atlanır ve bilgilendirme yapılır.
 
 ## Geliştirme
 ```bash
@@ -105,4 +105,4 @@ npm run build
 ```
 - Kaynak kodlar `src/` altında; `tsconfig.build.json` ile `dist/` klasörüne ESM çıktı üretilir.
 - Jest testleri `tests/` dizininde; yeni modül eklerken örnek testleri güncelle.
-- `npm run release -- <type>` komutu semantik sürüm atar, commit + tag oluşturup remote’a gönderir (CI yayın akışıyla uyumlu).
+- `npm version <type>` komutu semantik sürüm atar ve commit/tag oluşturur (ardından `git push --follow-tags`).

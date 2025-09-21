@@ -361,6 +361,24 @@ export async function runPostInstallCommands(commands: string[], cwd: string): P
     }
 }
 
+async function runCommand(command: string, args: string[], cwd: string): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+        const child = spawn(command, args, {
+            cwd,
+            shell: false,
+            stdio: 'inherit'
+        });
+        child.on('error', (error) => reject(error));
+        child.on('exit', (code) => {
+            if (code && code !== 0) {
+                reject(new Error(`${command} exited with code ${code}`));
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
 async function execGit(args: string[], cwd: string): Promise<{ stdout: string }> {
     const { stdout } = await execFileAsync('git', args, { cwd });
     return { stdout };
@@ -406,21 +424,10 @@ async function getGitStatus(cwd: string): Promise<GitStatusEntry[]> {
 }
 
 async function runInitialRelease(cwd: string, type: ReleaseType): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-        const child = spawn(npmCommand, ['run', 'release', '--', type], {
-            cwd,
-            shell: false,
-            stdio: 'inherit'
-        });
-        child.on('error', (error) => reject(error));
-        child.on('exit', (code) => {
-            if (code && code !== 0) {
-                reject(new Error(`npm run release exited with code ${code}`));
-            } else {
-                resolve();
-            }
-        });
-    });
+    const defaultMessage = 'chore: release v%s';
+    await runCommand(npmCommand, ['version', type, '-m', defaultMessage], cwd);
+    await runCommand('git', ['push'], cwd);
+    await runCommand('git', ['push', '--tags'], cwd);
 }
 
 export async function runGitAutomation(
