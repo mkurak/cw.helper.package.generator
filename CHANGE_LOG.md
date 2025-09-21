@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3] - 2025-09-21
+### Added
+- Added a smoke test that scaffolds a temporary package with the base module to ensure templates stay functional.
+### Changed
+- Release automation now calls `npm version <type>` followed by `git push --follow-tags` instead of relying on bundled scripts.
+- Generated packages now include an actual smoke test template that loads `dist/index.js`.
+
 ## [2.0.2] - 2025-09-21
 ### Changed
 - Removed the `release` npm script from generated packages, updated templates/docs, and updated git automation to run `npm version <type>` followed by `git push --follow-tags`.

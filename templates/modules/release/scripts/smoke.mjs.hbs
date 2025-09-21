@@ -1,2 +1,34 @@
 #!/usr/bin/env node
-console.log('[{{packageSlug}}] smoke test not yet implemented');
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+
+function fail(message, error) {
+  console.error('[{{packageSlug}}] Smoke test failed:', message);
+  if (error) {
+    console.error(error);
+  }
+  process.exit(1);
+}
+
+try {
+  const pkgPath = path.join(here, '..', 'package.json');
+  const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf8'));
+  if (!pkg.name) {
+    fail('package.json is missing a name property');
+  }
+
+  const distEntry = path.join(here, '..', 'dist', 'index.js');
+  await fs.access(distEntry);
+
+  const mod = await import(pathToFileURL(distEntry).href);
+  if (!mod || Object.keys(mod).length === 0) {
+    fail('dist/index.js did not export any symbols');
+  }
+
+  console.log(`[${pkg.name}] OK: smoke test passed`);
+} catch (error) {
+  fail('unexpected error', error);
+}
