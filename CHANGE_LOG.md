@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.6] - 2025-09-21
+### Changed
+- Removed the post-commit tag hook from the generator itself and from generated packages.
+
 ## [2.0.5] - 2025-09-21
 ### Changed
 - Added a standardized post-commit hook to mirror automatic tagging across all packages.

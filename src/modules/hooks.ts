@@ -34,11 +34,5 @@ export const hooksModule: TemplateModule = {
             packageSlug: ctx.variables.packageSlug
         });
         await fs.chmod(hookPath, 0o755);
-
-        const postCommitPath = path.join(ctx.targetDir, '.githooks', 'post-commit');
-        await ctx.copyTemplate('hooks', '.githooks/post-commit.hbs', '.githooks/post-commit', {
-            packageSlug: ctx.variables.packageSlug
-        });
-        await fs.chmod(postCommitPath, 0o755);
     }
 };
