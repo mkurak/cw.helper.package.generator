@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.4] - 2025-09-21
+### Changed
+- Updated generated pre-commit hooks to run only format, lint, and coverage checks.
+
 ## [2.0.3] - 2025-09-21
 ### Added
 - Added a smoke test that scaffolds a temporary package with the base module to ensure templates stay functional.
